@@ -1,0 +1,916 @@
+CREATE TABLE app_user(
+id int(11) NOT NULL AUTO_INCREMENT,passwd varchar(50) NOT NULL,last_login datetime DEFAULT NULL,is_superuser tinyint(1) NOT NULL default '0' ,username varchar(100) NOT NULL default '',first_name varchar(30) NOT NULL default '',last_name varchar(30) NOT NULL default '', email varchar(254) DEFAULT NULL,is_staff tinyint(1) NOT NULL default '1', is_active tinyint(1) NOT NULL default '1', created_on datetime NOT NULL DEFAULT '1970-01-01 00:00:01', updated_on datetime NOT NULL DEFAULT '1970-01-01 00:00:01', PRIMARY KEY (`id`), UNIQUE KEY `username` (`username`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
+ALTER TABLE `app_user` ADD `is_otp` tinyint(1) NOT NULL default '0';
+ALTER TABLE `app_user` ADD `is_email_verified` tinyint(1) NOT NULL default '0';
+
+CREATE TABLE `app_group` (`id` int(11) NOT NULL AUTO_INCREMENT,`name` varchar(80) NOT NULL default 'dummy',`created_on` datetime NOT NULL DEFAULT '1970-01-01 00:00:01',`updated_on` datetime NOT NULL DEFAULT '1970-01-01 00:00:01',PRIMARY KEY (`id`),UNIQUE KEY `name` (`name`)) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
+CREATE TABLE `mealok_content_type` (`id` int(11) NOT NULL AUTO_INCREMENT,`app_label` varchar(100) NOT NULL,`model` varchar(100) NOT NULL,`created_on` datetime NOT NULL DEFAULT '1970-01-01 00:00:01',`updated_on` datetime NOT NULL DEFAULT '1970-01-01 00:00:01',PRIMARY KEY (`id`),UNIQUE KEY `app_label` (`app_label`,`model`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+CREATE TABLE `mealok_session` (`id` int(11) NOT NULL AUTO_INCREMENT,`session_id` varchar(100) NOT NULL Default '',`logged_in` datetime NOT NULL DEFAULT '1970-01-01 00:00:01',`logged_out` datetime NOT NULL DEFAULT '1970-01-01 00:00:01',`is_enabled` tinyint(1) NOT NULL default '1',`app_user_id` int(11)  NOT NULL,`expire_date` datetime NOT NULL,PRIMARY KEY (`id`),KEY `app_user_id_1` (`app_user_id`),KEY `mealok_session_b7b81f0c` (`expire_date`),CONSTRAINT `mealok_session_ibfk_1` FOREIGN KEY (`app_user_id`) REFERENCES `app_user` (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
+CREATE TABLE `app_permission` (`id` int(11) NOT NULL AUTO_INCREMENT,`name` varchar(255) DEFAULT NULL,`content_type_id` int(11) NOT NULL,`codename` varchar(100) NOT NULL,PRIMARY KEY (`id`),UNIQUE KEY `content_type_id` (`content_type_id`,`codename`),KEY `auth_permission_37ef4eb4` (`content_type_id`),CONSTRAINT `content_type_id_refs_id_d043b34a` FOREIGN KEY (`content_type_id`) REFERENCES `mealok_content_type` (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `app_group_permissions` (`id` int(11) NOT NULL AUTO_INCREMENT,`group_id` int(11) NOT NULL,`permission_id` int(11) NOT NULL,PRIMARY KEY (`id`),UNIQUE KEY `group_id` (`group_id`,`permission_id`),KEY `auth_group_permissions_5f412f9a` (`group_id`),KEY `auth_group_permissions_83d7f98b` (`permission_id`),CONSTRAINT `group_id_refs_id_f4b32aac` FOREIGN KEY (`group_id`) REFERENCES `app_group` (`id`),CONSTRAINT `permission_id_refs_id_6ba0f519` FOREIGN KEY (`permission_id`) REFERENCES `app_permission` (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `app_user_user_permissions` (`id` int(11) NOT NULL AUTO_INCREMENT,`user_id` int(11) NOT NULL,`permission_id` int(11) NOT NULL,PRIMARY KEY (`id`),UNIQUE KEY `user_id` (`user_id`,`permission_id`),KEY `auth_user_user_permissions_6340c63c` (`user_id`),KEY `auth_user_user_permissions_83d7f98b` (`permission_id`),CONSTRAINT `permission_id_refs_id_35d9ac25` FOREIGN KEY (`permission_id`) REFERENCES `app_permission` (`id`),CONSTRAINT `user_id_refs_id_4dc23c39` FOREIGN KEY (`user_id`) REFERENCES `app_user` (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `app_user_group`(`id` int(11) NOT NULL AUTO_INCREMENT,`user_id` int(11) NOT NULL,`grp_id` int(11) NOT NULL , PRIMARY KEY (`id`),UNIQUE KEY `app_user_group_1` (`user_id`,`grp_id`),KEY `app_user_group_6340c63c` (`user_id`),KEY `app_user_group_83d7f98b` (`grp_id`),CONSTRAINT `app_user_group_id_refs_id_35d9ac25` FOREIGN KEY (`grp_id`) REFERENCES `app_group` (`id`),CONSTRAINT `app_user_group_id_refs_id_4dc23c39` FOREIGN KEY (`user_id`) REFERENCES `app_user` (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `mealok_admin_log` (`id` int(11) NOT NULL AUTO_INCREMENT,`action_time` datetime NOT NULL,`user_id` int(11) NOT NULL,`content_type_id` int(11) DEFAULT NULL,`object_id` longtext,`object_repr` varchar(200) NOT NULL, `action_flag` smallint(5) unsigned NOT NULL,`change_message` longtext NOT NULL,PRIMARY KEY (`id`), KEY `django_admin_log_6340c63c` (`user_id`), KEY `django_admin_log_37ef4eb4` (`content_type_id`),CONSTRAINT `content_type_id_refs_id_93d2d1f8` FOREIGN KEY (`content_type_id`) REFERENCES `mealok_content_type` (`id`),CONSTRAINT `user_id_refs_id_c0d12874` FOREIGN KEY (`user_id`) REFERENCES `app_user` (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+//New tables mapping the mealok model
+Vendor {
+    long id;
+    String uid;
+    long CategoryId;
+    //String profile_pic_id;
+
+    long experience_id;//one-one mapping
+    boolean isEnabled;
+    long approvableCode;
+
+
+    String popularName;
+    String popularName_id;
+    String shortDescription;
+    String shortDescription_id;
+    String longDescription;
+    String longDescription_id;
+
+    long country_id;
+    long city_id;
+    long rate_id;
+
+
+
+    Date createdOn;
+    Date updatedOn;
+
+
+}//done
+VendorTimeOfDay{
+    long id;
+    long vendor_id;
+    long time_id_day_id;
+
+    boolean is_enabled;
+    Date created_on;
+
+}//done
+
+// need to be populated with script
+Slots{
+    long id;
+    String text;
+    String text_id;
+
+    int value;
+
+}//not needed now
+VendorSlots{
+    long id;
+    boolean isEnabled;
+
+    Date created_on;
+    Date date_curr;
+
+    long start_time_id ; // foreign key to slots table
+    long end_time_id; // foreign key to slots table
+
+}//not needed now
+Rate{
+    long id;
+
+    boolean isEnabled; // is_enabled - column name
+    long rate_unit_id;
+    int person;
+    int value;
+
+    Date created_on;
+
+}//done
+RateUnit{
+    long id;
+    boolean isEnabled;
+
+    String unit;
+}//done
+
+WorkingSlots{
+    long id;
+    boolean isEnbaled;
+    String name;
+    String name_id;
+    String alternate_name;
+    String alternate_id;
+
+    Date createdOn;
+}//not needed now
+WorkingSlotsVendor{
+    long id;
+    boolean isEnabled;
+
+    Date createdOn;
+    long working_slots_id;
+    long vendor_id;
+
+}//not needed now
+VendorCuisineExpert{
+    long id;
+    boolean isEnabled;
+    long cuisine_sub_group_id;
+    long vendor_id;
+
+    Date createdOn;
+    unique(isEnabled,cuisine_sub_group_id,vendor_id);
+
+}//done
+VendorCuisineComfortable{
+    long id;
+    boolean isEnabled;
+    long cuisine_sub_group_id;
+    long vendor_id;
+
+    unique(isEnabled,cuisine_sub_group_id,vendor_id);
+
+    Date createdOn;
+
+}//done
+CuisineSuperGroup{
+    long id;
+    boolean isEnabled;
+    Date createdOn;
+
+    String name;
+    String name_id;
+}//done
+CuisineSubGroup{
+    long id;
+    boolean isEnabled;
+
+    long cusines_super_group_id;
+
+
+    Date createdOn;
+    String name;
+    String name_id;
+    String alternate_name;
+    String alternate_name_id;
+}//done
+ExtraFunctionalities{
+    long id;
+    boolean isEnabled;
+    Date createOn;
+
+    String text;
+    String text_id;
+    String someExtraText;
+    String someExtraText_id;
+
+
+}//done
+VendorExtraFunctionalities{
+    long id;
+    long vendor_id;
+    long extra_func_id;
+
+    boolean isEnabled;
+
+}//done
+Gender{
+    long id;
+
+    boolean isEnabled;
+    Date createdOn;
+    String text;
+    String text_id;
+}//done
+Language{
+    long id;
+    boolean isEnabled;
+    Date createdOn;
+
+    String name;
+    String name_id;
+    String association_text;
+    String association_text_id;
+
+}//done
+VendorLanguage{
+    long id;
+    long vendor_id;
+    long language_id;
+
+    boolean isEnabled;
+
+}//done
+
+Address{
+    long id;
+    boolean isEnabled;
+
+    Date createdOn;
+    long country_id;
+    long state_id;
+    long city_id;
+
+    int pincode;
+    long type_id;//foreign key of address_id
+
+    String lineOne;
+    String lineOne_id;
+    String lineTwo;
+    String lineTwo_id;
+
+}//done
+
+AddressCatgory{
+    long id;
+    String type;// permanent and current
+    String type_id;
+
+
+}//done
+Vendor_area{
+    long id;
+    boolean isEnabled;
+
+    long vendor_id;
+    long area_id;
+
+}//done
+
+Country{
+    long id;
+    boolean isEnabled;
+
+
+    Date createdOn;
+    String name;
+    String name_id;
+
+}//done
+
+State{
+    long id;
+    boolean isEnabled;
+    long country_id ; // foreign key of country table
+
+
+    Date createdOn;
+    String name;
+    String name_id;
+
+}//done
+City{
+    long id;
+    boolean isEnabled;
+    long state_id ; // foreign key of state table
+
+
+    Date createdOn;
+    String name;
+    String name_id;
+}//done
+Area{
+    long id;
+    boolean is_enabled;
+    long city_id;
+
+    Date created_on;
+    String name;
+    String name_id;
+
+}//done
+Experience{
+    long id;
+    int data;
+    long experience_unit_id;
+
+    boolean isEnabled;
+    Date createdOn;
+} //done
+ExperienceUnit{
+    long id;
+    long value;
+    long value_id;
+
+    boolean isEnabled;
+
+} //done
+
+IDProofForVendor{
+    long id,
+    String uid;
+    long category_id;
+    long vendor_id;
+
+
+    String url;//scanned url uploaded and url of cloudinary
+    boolean isEnabled;
+
+    unique(category_id, vendor_id,isEnabled)
+
+
+}//done
+
+IDProofCategory{
+    long id;
+
+    boolean isEnabled;
+    Date createdOn;
+    String category;
+    String category_id;
+
+}//done
+
+EducationalQualifications{
+    long id;
+    String uid;
+
+    long vendor_id;
+
+    Date createdOn;
+    boolean isEnabled;
+
+    String details;
+    String details_id;
+
+}//done
+ProfessionalQualifications{
+    long id;
+    String uid;
+
+    long vendor_id;
+
+    Date createdOn;
+    boolean isEnabled;
+
+    String details;
+    String details_id;
+
+}//done
+Acheivements{
+    long id;
+    String uid;
+
+    long vendor_id;
+
+    Date createdOn;
+    boolean isEnabled;
+
+    String details;
+    String details_id;
+
+}//done
+VendorProfilePic{
+    long id;
+    String url;//cloudinary URL
+    long vendor_id;
+    boolean isCurrent;
+    Date createdOn;
+
+}//done
+
+Language {
+    long id;
+    String name;
+    boolean default;
+}//done
+
+VendorCategory{
+    long id;
+    String uid;
+    boolean isEnabled;
+    long approvableCode;
+
+    Date createdOn;
+    Date updatedOn;
+
+    String name; // cook, chef , foodie , critic
+    String name_id;
+    int priority;
+    boolean default;
+
+
+}//done
+
+ApprovalTable{ //data to be inserted only from mysql client and code written according to codes.
+    long id;
+    String name;
+    long code;
+
+    Date createdOn;
+    Date updatedOn;
+
+}//done
+
+ApprovableStages{ //this table entries are only added and never deleted and updated
+
+    long id;
+    long appUserId  not null not updatable;
+    long content_type_id not null not updatable;
+    long approvable_code ; //foreign key to the approval table
+    String objectId; //this is the uid of the object whose transtition is to be traced.
+
+    Date createdOn;
+}//done
+
+///// Recips ----- ///////
+Recipe{
+    long id;
+    String uid;
+    String name;
+    String name_id;
+    String small_description;
+    String small_description_id;
+    String long_description;
+    String long_description_id;
+    String label;
+    String label_id;
+    double rating;
+
+    long recipe_category_id;
+    //long cuisine_id;// awadhi , lucknowi. // it will many to many
+    Date date_of_submission;
+    long egg_non_veg_id;
+
+    int serving_size;
+    double buffer_cooking_time_mins;
+    double buffer_preparation_time_mins;
+
+    boolean is_enabled;
+    long approval_code;
+
+    //owner
+    long meal_ok_user_id;// keep this uid
+
+
+
+}//done
+RecipeTimeOfDay{
+    long id;
+    long recipe_id;
+    long time_id_day_id;
+
+    boolean is_enabled;
+    Date created_on;
+
+}//done
+Tags{
+    long id;
+
+    boolean is_enabled;
+    Date created_on;
+
+    int count_attachment;
+
+    String text;
+    String text_id;
+    long approval_code;
+
+
+}//done
+PreparationSteps{
+    long id;
+
+    boolean is_enabled;
+    Date created_on;
+    long approval_code;
+
+    String text;
+    String text_id;
+
+    double cooking_time_in_mins;
+    double preparation_time_in_mins;
+
+}//done
+RecipePreparationSteps{
+    long id;
+
+    long recipe_id;
+    long prepration_step_id;
+
+    boolean is_enabled;
+    Date created_on;
+
+    long approval_code;
+
+}//done
+VegNonVegEgg{
+    long id;
+    boolean is_enabled;
+
+    Date created_on;
+    String name; //  egg, vegetarian , vegan , meat , sea-food
+    String name_id;
+
+}//done
+RecipeCuisine{
+    long id;
+    long recipe_id;
+    long cuisine_id;
+
+    boolean is_enabled;
+    Date created_on;
+
+}//done
+RecipeCategory{
+    long id;
+    boolean is_enabled;
+
+    String name;// Main Course, Beverages, Appetizers , etc
+    String name_id;
+    Date created_on;
+
+}//done
+Recipe_picture_urls{
+    long id;
+    long recipe_id; // foreign key to recipe table
+
+    boolean isEnabled;
+    String url;
+    Date created_on;
+
+    unique(url,isEnabled)
+}//done
+Recipe_ingredient{
+    long id;
+    long recipe_id;
+    long ingredient_id;
+
+    String lame_user_text;
+    String lame_user_text_id;
+
+    double quantity;
+    long value_unit_id;// foreign key to value unit id
+
+    boolean is_enabled;
+    long approval_code;
+    int order;
+
+    unique(recipe_id, ingredient_id,is_enabled,approval_code,order);
+
+}//done
+Ingredients{
+    long id;
+    long uid;
+    boolean is_enabled;
+    Date created_on;
+
+    long approval_code;
+    String name;
+    String name_id;
+    String popular_name;
+    String popular_name_id;
+
+
+    double baseQuantity;
+    long ingredient_value_unit_id;
+    //double cost;// cost in rupees
+
+    double calories;
+}//done
+Ingredient_type_of_ingredient{
+    long id;
+
+    boolean is_enabled;
+    Date created_on;
+
+    long ingredient_id;
+    long type_of_ingredient_id;
+}//done
+TypeOfIngredient{
+    long id;
+    boolean is_enabled;
+
+    Date created_on;
+    String name; // vegetable , fruit ,
+    String name_id;
+
+    long approval_code;
+
+}//done
+Ingredient_season{
+    long id;
+
+    boolean is_enabled;
+    Date created_on;
+
+    long ingredient_id;
+    long season_id;
+}//done
+MONTHS{ //initialization
+    long id;
+    boolean is_enabled;
+
+    Date created_on;
+    String text;
+    String text_id;
+
+    int order;
+
+}//done
+Season{
+
+    long id;
+
+    boolean is_enabled;
+    Date created_on;
+
+    long start_month_id;
+    long end_month_id;
+
+    String text;
+    String text_id;
+
+    long approval_code;
+}//done
+PriceUnit{
+
+    long id;
+    boolean is_enabled;
+    Date created_on;
+
+    String name;
+    String name_id;
+
+    long approval_code;
+
+}//done
+Cost{
+    long id;
+    long uid;
+    String price_unit_id;
+    boolean is_enabled;
+    Date created_on;
+    double value;
+    long season_id;
+    long state_id; // null then India
+    long ingredient_id;
+
+    long approval_code;
+
+}//done
+IngredientPicture{
+    long id;
+    boolean is_enabled;
+
+    long ingredient_id; // foreign key of ingredient table
+    String url;//cloudinary url
+
+    Date created_on;
+
+}//done
+ValueUnit{
+    long id;
+    boolean is_enabled;
+
+    String unit;// gm , pound
+    Date created_on;
+
+}//done
+IngredientsNutrientsDetails{
+    long id;
+    long Ingredient_nutrient_id;//foreign key of ingredient_nutrient
+    long ingredient_id; //foreign key of ingredient table
+    double baseQuanity;
+    long ingredient_value_unit_id;
+}//done
+IngredientNutrients{
+    long id;
+    boolean is_enabled;
+
+    String name;//fat, protein
+    String name_id;
+
+}//done
+TimeOfDay{
+    long id;
+
+    boolean is_enabled;
+    Date created_on;
+    long approval_code;
+
+    String text;//lunch, dinner , breakfast
+    String text_id;
+
+}//done
+//Meal ok user
+MealOkUser{
+    long id;
+    long uid;
+    long mealok_user_account_id;
+    long meal_ok_user_vendor_id;
+
+
+
+
+    boolean is_enabled;
+    Date created_on;
+    long approval_code;
+
+    long referred_by; // foreign key to mealokuser table : recursive one to one
+
+}//done
+MealOKUserLike{
+    long id;
+    boolean is_enabled;
+    Date created_on;
+
+    long meal_ok_user_id;
+    long object_uid;
+    long type_entity_id;
+
+}//done
+MealOKUserFollow{
+    long id;
+    boolean is_enabled;
+    Date created_on;
+
+    long meal_ok_user_id;
+    long object_uid;
+    long type_entity_id; // only user
+
+}//done
+EntityType{
+    long id;
+    boolean is_enabled;
+    String text; // Recipe, Ingredients, Tips, Articles , collections, Review
+    String text_id;
+
+    Date created_on;
+}//done
+MealOkUserAccount{
+    long id;
+    String firstName;
+    String firstName_id;
+    String lastName;
+    String lastName_id;
+
+    String email;//should be of pattern that of email.
+    Date date_of_birth;
+    String main_contact;
+    String alternate_contact;
+    long gender_id;
+
+    boolean is_enabled;
+    Date created_on;
+}//done
+
+//Tips
+Tips{
+    long id;
+    long uid;
+    boolean is_enabled;
+
+    String text;
+    String text_id;
+
+    String description ;
+    String description_id;
+
+    String heading;
+    String heading_id;
+
+
+    long approval_code;
+    Date ceated_on;
+}//done
+TipsTag{
+    long id;
+    long tag_id;
+    long tips_uid;
+
+    boolean is_enabled;
+    Date created_on;
+
+}//done
+TipsImage{
+    long id;
+    long tips_uid;
+    String image_url;
+    boolean is_enabled;
+    long approval_code;
+
+    Date created_on;
+}//done
+//Articles
+Articles{
+    long id;
+    long uid;
+
+    boolean is_enabled;
+    Date created_on;
+
+    String mealok_user_uuid;
+    Date created_date;
+    String header;
+    String header_id;
+
+    int rating;
+
+
+    String text
+}//done
+ArticleTag{
+    long id;
+    long tag_id;
+    long article_uid;
+
+    boolean is_enabled;
+    Date created_on;
+
+}//done
+ArticlesBlock{
+    long id;
+    long uid;
+    long article_uid; // foreign key to article table
+
+    long blocktype_id;// para, img , video, quote
+    String text;
+    String text_id;// comma seperated value for image and video
+
+    boolean is_enabled;
+    Date created_on;
+}//done
+//Review and collections
+Review{
+    long id;
+    long uid;
+    long entity_type_id;//foreign key to EntityType
+    long related_entity_uid;
+
+    long mealok_user_uid;
+    boolean is_enabled;
+    Date created_on;
+
+    String text;
+    String text_id;
+
+    Date creation_date;
+    long approval_code;
+
+}//done
+CommentToReviews{
+    long id;
+
+    long review_uid;
+    long mealk_ok_user_uid;
+    boolean is_enabled;
+
+    long parent_id;// foreign key to same table
+
+    Date created_on;
+
+}//done
+//Collections
+Collection{
+    long id;
+    long uid;
+    long meal_od_user_uid; // owner
+
+    boolean is_enabled;
+    Date created_on;
+    String name;
+    String name_id;
+    String popular_name;
+    String popular_name_id;
+
+    Sring collection_type_enitity_id;
+
+    long parent_id;
+    boolean isCluster;
+}//done
+CollectionEntity{
+    long id;
+    long collection_uid;
+    long entity_type_id;
+    long entity_uid;
+
+    boolean is_enabled;
+}//done
+CollectionImage{
+    long id;
+    long collection_uid;
+    String image_url;
+
+    boolean is_enabled;
+    long approval_code;
+
+    Date created_on;
+} //done
+EntityTag{
+    long id;
+    long tag_uid;
+    long entity_type_id;
+    long entity_object_uid;
+
+    boolean is_enabled;
+    Date created_on;
+
+}//done

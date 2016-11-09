@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+        <property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
+        <property name="hibernate.connection.password">dasShalmoli</property>
+        <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/mealok_db</property>
+        <property name="hibernate.connection.username">mealok_user</property>
+        <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
+
+        <property name="hibernate.current_session_context_class">thread</property>
+        <property name="hibernate.show_sql">true</property>
+
+        <mapping class="com.mealok.admin.model.AppUser"/>
+        <mapping class="com.mealok.admin.model.AppGroup"/>
+        <mapping class="com.mealok.admin.model.AppPermission"/>
+        <mapping class="com.mealok.admin.model.MealokSession"/>
+        <mapping class="com.mealok.admin.model.MealokContentType"/>
+        <mapping class="com.mealok.admin.model.MealokAdminLog"/>
+        <mapping class="com.mealok.admin.model.Country"/>
+        <mapping class="com.mealok.admin.model.State"/>
+        <mapping class="com.mealok.admin.model.City"/>
+        <mapping class="com.mealok.admin.model.Area"/>
+    </session-factory>
+</hibernate-configuration>

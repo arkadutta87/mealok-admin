@@ -1,0 +1,492 @@
+CREATE TABLE app_user(
+id int(11) NOT NULL AUTO_INCREMENT,passwd varchar(50) NOT NULL,last_login datetime DEFAULT NULL,is_superuser tinyint(1) NOT NULL default '0' ,username varchar(100) NOT NULL default '',first_name varchar(30) NOT NULL default '',last_name varchar(30) NOT NULL default '', email varchar(254) DEFAULT NULL,is_staff tinyint(1) NOT NULL default '1', is_active tinyint(1) NOT NULL default '1', created_on datetime NOT NULL DEFAULT '1970-01-01 00:00:01', updated_on datetime NOT NULL DEFAULT '1970-01-01 00:00:01', PRIMARY KEY (`id`), UNIQUE KEY `username` (`username`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
+ALTER TABLE `app_user` ADD `is_otp` tinyint(1) NOT NULL default '0';
+
+CREATE TABLE `app_group` (`id` int(11) NOT NULL AUTO_INCREMENT,`name` varchar(80) NOT NULL default 'dummy',`created_on` datetime NOT NULL DEFAULT '1970-01-01 00:00:01',`updated_on` datetime NOT NULL DEFAULT '1970-01-01 00:00:01',PRIMARY KEY (`id`),UNIQUE KEY `name` (`name`)) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
+CREATE TABLE `mealok_content_type` (`id` int(11) NOT NULL AUTO_INCREMENT,`app_label` varchar(100) NOT NULL,`model` varchar(100) NOT NULL,`created_on` datetime NOT NULL DEFAULT '1970-01-01 00:00:01',`updated_on` datetime NOT NULL DEFAULT '1970-01-01 00:00:01',PRIMARY KEY (`id`),UNIQUE KEY `app_label` (`app_label`,`model`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+CREATE TABLE `mealok_session` (`id` int(11) NOT NULL AUTO_INCREMENT,`session_id` varchar(100) NOT NULL Default '',`logged_in` datetime NOT NULL DEFAULT '1970-01-01 00:00:01',`logged_out` datetime NOT NULL DEFAULT '1970-01-01 00:00:01',`is_enabled` tinyint(1) NOT NULL default '1',`app_user_id` int(11)  NOT NULL,`expire_date` datetime NOT NULL,PRIMARY KEY (`id`),KEY `app_user_id_1` (`app_user_id`),KEY `mealok_session_b7b81f0c` (`expire_date`),CONSTRAINT `mealok_session_ibfk_1` FOREIGN KEY (`app_user_id`) REFERENCES `app_user` (`id`)) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
+CREATE TABLE `app_permission` (`id` int(11) NOT NULL AUTO_INCREMENT,`name` varchar(255) DEFAULT NULL,`content_type_id` int(11) NOT NULL,`codename` varchar(100) NOT NULL,PRIMARY KEY (`id`),UNIQUE KEY `content_type_id` (`content_type_id`,`codename`),KEY `auth_permission_37ef4eb4` (`content_type_id`),CONSTRAINT `content_type_id_refs_id_d043b34a` FOREIGN KEY (`content_type_id`) REFERENCES `mealok_content_type` (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `app_group_permissions` (`id` int(11) NOT NULL AUTO_INCREMENT,`group_id` int(11) NOT NULL,`permission_id` int(11) NOT NULL,PRIMARY KEY (`id`),UNIQUE KEY `group_id` (`group_id`,`permission_id`),KEY `auth_group_permissions_5f412f9a` (`group_id`),KEY `auth_group_permissions_83d7f98b` (`permission_id`),CONSTRAINT `group_id_refs_id_f4b32aac` FOREIGN KEY (`group_id`) REFERENCES `app_group` (`id`),CONSTRAINT `permission_id_refs_id_6ba0f519` FOREIGN KEY (`permission_id`) REFERENCES `app_permission` (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `app_user_user_permissions` (`id` int(11) NOT NULL AUTO_INCREMENT,`user_id` int(11) NOT NULL,`permission_id` int(11) NOT NULL,PRIMARY KEY (`id`),UNIQUE KEY `user_id` (`user_id`,`permission_id`),KEY `auth_user_user_permissions_6340c63c` (`user_id`),KEY `auth_user_user_permissions_83d7f98b` (`permission_id`),CONSTRAINT `permission_id_refs_id_35d9ac25` FOREIGN KEY (`permission_id`) REFERENCES `app_permission` (`id`),CONSTRAINT `user_id_refs_id_4dc23c39` FOREIGN KEY (`user_id`) REFERENCES `app_user` (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `app_user_group`(`id` int(11) NOT NULL AUTO_INCREMENT,`user_id` int(11) NOT NULL,`grp_id` int(11) NOT NULL , PRIMARY KEY (`id`),UNIQUE KEY `app_user_group_1` (`user_id`,`grp_id`),KEY `app_user_group_6340c63c` (`user_id`),KEY `app_user_group_83d7f98b` (`grp_id`),CONSTRAINT `app_user_group_id_refs_id_35d9ac25` FOREIGN KEY (`grp_id`) REFERENCES `app_group` (`id`),CONSTRAINT `app_user_group_id_refs_id_4dc23c39` FOREIGN KEY (`user_id`) REFERENCES `app_user` (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `mealok_admin_log` (`id` int(11) NOT NULL AUTO_INCREMENT,`action_time` datetime NOT NULL,`user_id` int(11) NOT NULL,`content_type_id` int(11) DEFAULT NULL,`object_id` longtext,`object_repr` varchar(200) NOT NULL, `action_flag` smallint(5) unsigned NOT NULL,`change_message` longtext NOT NULL,PRIMARY KEY (`id`), KEY `django_admin_log_6340c63c` (`user_id`), KEY `django_admin_log_37ef4eb4` (`content_type_id`),CONSTRAINT `content_type_id_refs_id_93d2d1f8` FOREIGN KEY (`content_type_id`) REFERENCES `mealok_content_type` (`id`),CONSTRAINT `user_id_refs_id_c0d12874` FOREIGN KEY (`user_id`) REFERENCES `app_user` (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+//New tables mapping the mealok model
+Vendor {
+    long id;
+    String uid;
+    long CategoryId;
+    String email;
+    //String profile_pic_id;
+
+    long experience_id;//one-one mapping
+    String main_contact;
+    String alternate_contact;
+
+    String email;//should be of pattern that of email.
+
+    Date date_of_birth;
+    boolean isEnabled;
+    long approvableCode;
+
+    long country_id;
+    long city_id;
+
+    long gender_id;
+
+    Date createdOn;
+    Date updatedOn;
+
+
+}
+
+VendorTranslational{
+    long id;
+    long parent_id ; // foreign key to vendor table -- id
+
+    long language_encoding;//foreign key to Language table
+    String name;
+    String popularName;
+    String shortDescription;
+    String longDescription;
+
+}
+
+WorkingSlots{
+    long id;
+    boolean isEnbaled;
+
+    Date createdOn;
+}
+WorkingSlotsTranslational{
+    long id;
+    long parent_id;
+
+    String name;
+    String alternate_name;
+}
+WorkingSlotsVendor{
+    long id;
+    boolean isEnabled;
+
+    Date createdOn;
+    long working_slots_id;
+    long vendor_id;
+
+}
+VendorCuisineExpert{
+    long id;
+    boolean isEnabled;
+    long cuisine_sub_group_id;
+    long vendor_id;
+
+    Date createdOn;
+    unique(isEnabled,cuisine_sub_group_id,vendor_id);
+
+}
+VendorCuisineComfortable{
+    long id;
+    boolean isEnabled;
+    long cuisine_sub_group_id;
+    long vendor_id;
+
+    unique(isEnabled,cuisine_sub_group_id,vendor_id);
+
+    Date createdOn;
+
+}
+CuisineSuperGroup{
+    long id;
+    boolean isEnabled;
+    Date createdOn;
+}
+CuisineSuperGroupTranslational{
+    long id;
+    long parent_id ; foreign key of CuisineSuperGroup
+
+    long language_encoding;
+    String name;
+
+}
+CuisineSubGroup{
+    long id;
+    boolean isEnabled;
+
+    long cusines_super_group_id;
+
+
+    Date createdOn;
+}
+CuisineSubGroupTranslational{
+    long id;
+    long parent_id;
+
+    long language_encoding;
+    String name;
+    String alternate_name;
+
+}
+ExtraFunctionalities{
+    long id;
+    boolean isEnabled;
+    Date createOn;
+
+
+}
+
+ExtraFunctionalitiesText{
+    long id;
+    long parent_id;
+
+    long language_encoding;
+    String text;
+    String someExtraText; //dont know what it is as of now.
+
+}
+
+VendorExtraFunctionalities{
+    long id;
+    long vendor_id;
+    long extra_func_id;
+
+    boolean isEnabled;
+
+}
+
+Gender{
+    long id;
+
+    boolean isEnabled;
+    Date createdOn;
+}
+GenderTranslational{
+    long id;
+    long parent_id;//foreign key
+
+    String text;
+    long language_encoding;
+
+}
+Language{
+    long id;
+    boolean isEnabled;
+    Date createdOn;
+
+}
+LanguageTranslational{
+    long id;
+    long parent_id; // foreign key
+
+    long language_encoding;
+    String name;
+    String associating_text;
+}
+VendorLanguage{
+    long id;
+    long vendor_id;
+    long language_id;
+
+    boolean isEnabled;
+
+}
+
+Address{
+    long id;
+    boolean isEnabled;
+
+    Date createdOn;
+    long country_id;
+    long state_id;
+    long city_id;
+
+    int pincode;
+    long type_id;
+
+}
+
+AddressCatgory{
+    long id;
+
+
+}
+AddressCategory{
+    long id;
+    long parent_id;
+
+    long language_encoding;
+    String type; // permanent and current
+
+}
+
+AddressTranslational{
+    long id;
+    long parent_id;// foreign key of the address table
+
+    long language_encoding; // foreign key to language table
+    String lineOne;
+    String lineTwo;
+
+
+
+}
+
+Vendor_area{
+    long id;
+    boolean isEnabled;
+
+    long vendor_id;
+    long area_id;
+
+}
+
+Country{
+    long id;
+    boolean isEnabled;
+
+
+    Date createdOn;
+
+}
+CountryTranslational{
+    long id;
+    long parent_id; //foreign key of Country(id)
+
+    long language_encoding;
+    String name;
+
+}
+
+State{
+    long id;
+    boolean isEnabled;
+    long country_id ; // foreign key of country table
+
+
+    Date createdOn;
+
+}
+StateTranslational{
+    long id;
+    long parent_id ; //foreign key of state table
+
+    long language_encoding;
+    String name;
+}
+
+City{
+    long id;
+    boolean isEnabled;
+    long state_id ; // foreign key of state table
+
+
+    Date createdOn;
+
+
+}
+CityTranslational{
+    long id;
+    long parent_id ; //foreign key of city table
+
+    long language_encoding;
+    String name;
+}
+
+Area{
+    long id;
+    boolean is_enabled;
+    long city_id;
+
+    Date created_on;
+
+}
+AreaTranslational{
+    long id;
+    long parent_id ; //foreign key of area table
+
+    long language_encoding;
+    String name;
+
+}
+
+Experience{
+    long id;
+    int years;
+}
+
+IDProofForVendor{
+    long id,
+    String uid;
+    long category_id;
+    long vendor_id;
+
+
+    String url;//scanned url uploaded and url of cloudinary
+    boolean isEnabled;
+
+    unique(category_id, vendor_id,isEnabled)
+
+
+}
+
+IDProofCategory{
+    long id;
+
+    boolean isEnabled;
+    Date createdOn;
+
+}
+
+IDProofCategoryTranslational{
+    long id,
+    long id_proof_category;
+
+    long language_encoding;
+    String category;
+
+
+}
+
+
+ExperienceTranslational{
+    long id;
+    long parent_id ; // foreign key to vendor table -- id
+
+    long language_encoding;//foreign key to Language table
+    String displayText;
+}
+
+EducationalQualifications{
+    long id;
+    String uid;
+
+    long vendor_id;
+
+    Date createdOn;
+    boolean isEnabled;
+
+}
+
+EducationalQualificationsTranslational{
+    long id;
+    long parent_id;
+
+    long language_encoding; // foreign key to vendor table - id
+    String details;
+
+}
+
+ProfessionalQualifications{
+    long id;
+    String uid;
+
+    long vendor_id;
+
+    Date createdOn;
+    boolean isEnabled;
+
+}
+
+ProfessionalQualificationsTranslational{
+    long id;
+    long parent_id;
+
+    long language_encoding; // foreign key to vendor table - id
+    String details;
+
+}
+
+Acheivements{
+    long id;
+    String uid;
+
+    long vendor_id;
+
+    Date createdOn;
+    boolean isEnabled;
+
+}
+
+AcheivementsTranslational{
+    long id;
+    long parent_id;
+
+    long language_encoding; // foreign key to vendor table - id
+    String details;
+
+}
+
+
+
+VendorProfilePic{
+    long id;
+    String url;//cloudinary URL
+    long vendor_id;
+    boolean isCurrent;
+    Date createdOn;
+
+}
+
+Language {
+    long id;
+    String name;
+    boolean default;
+}
+
+Category{
+    long id;
+    String uid;
+    boolean isEnabled;
+    long approvableCode;
+
+    Date createdOn;
+    Date updatedOn;
+
+
+
+}
+
+CategoryTranslational{
+    long id;
+
+    long language_encoding;//foreign key to Language table
+    long cat_id ; //foreign key to category table
+
+    String name;
+
+
+
+}
+
+ApprovalTable{ //data to be inserted only from mysql client and code written according to codes.
+    long id;
+    String name;
+    long code;
+
+    Date createdOn;
+    Date updatedOn;
+
+}
+
+ApprovableStages{ //this table entries are only added and never deleted and updated
+
+    long id;
+    long appUserId  not null not updatable;
+    long content_type_id not null not updatable;
+    long approvable_code ; //foreign key to the approval table
+    String objectId; //this is the uid of the object whose transtition is to be traced.
+
+    Date createdOn;
+
+
+}
+

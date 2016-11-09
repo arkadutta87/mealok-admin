@@ -1,0 +1,9 @@
+<xml>
+    <model>
+        <base-package>com.mealok.admin.model</base-package>
+        <content-type-not-necessary>
+            <class>com.mealok.admin.model.MealokContentType</class>
+            <class>com.mealok.admin.model.MealokSession</class>
+        </content-type-not-necessary>
+    </model>
+</xml>
