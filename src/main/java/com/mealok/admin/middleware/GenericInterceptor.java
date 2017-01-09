@@ -1,6 +1,10 @@
 package com.mealok.admin.middleware;
 
 import com.mealok.admin.cache.CacheUtil;
+import com.mealok.admin.common.MealOKPermission;
+import com.mealok.admin.model.AppPermission;
+import com.mealok.admin.model.AppUser;
+import com.mealok.admin.service.AppUserService;
 import com.mealok.admin.service.LoginService;
 import com.mealok.admin.utils.Constants;
 import com.mealok.admin.utils.Util;
@@ -20,8 +24,11 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by arkadutta on 24/10/16.
@@ -65,6 +72,9 @@ public class GenericInterceptor extends HandlerInterceptorAdapter {
     @Autowired
     LoginService loginService;  //Service which will do all data retrieval/manipulation work
 
+    @Autowired
+    AppUserService appUserService;
+
     //@Autowired
     //private RequestMappingHandlerMapping requestMappingHandlerMapping;
     @Autowired
@@ -103,44 +113,48 @@ public class GenericInterceptor extends HandlerInterceptorAdapter {
     }
 
     //Important Code
-//    private String getMethodRequestMapping(Method method) {
-//        Assert.notNull(method, "'method' must not be null");
-//        RequestMapping requestMapping = AnnotatedElementUtils.findMergedAnnotation(method, RequestMapping.class);
-//        if (requestMapping == null) {
-//            throw new IllegalArgumentException("No @RequestMapping on: " + method.toGenericString());
-//        }
-//        String[] paths = requestMapping.path();
-//        if (ObjectUtils.isEmpty(paths) || StringUtils.isEmpty(paths[0])) {
-//            return "/";
-//        }
-//        /*if (paths.length > 1 && logger.isWarnEnabled()) {
-//            logger.warn("Multiple paths on method " + method.toGenericString() + ", using first one");
-//        }*/
-//        return paths[0];
-//    }
-//
-//    private void printRequestHandlerDetails(){
-//
-//        //WebApplicationContext context = new GenericWebApplicationContext();
-//        RequestMappingHandlerMapping requestMappingHandlerMapping = appContext.getBean(RequestMappingHandlerMapping.class);
-//        Map<RequestMappingInfo, HandlerMethod> handlerMethods =
-//                requestMappingHandlerMapping.getHandlerMethods();
-//
-//        for(Map.Entry<RequestMappingInfo, HandlerMethod> item : handlerMethods.entrySet()) {
-//            RequestMappingInfo mapping = item.getKey();
-//            HandlerMethod method = item.getValue();
-//
-//            for (String urlPattern : mapping.getPatternsCondition().getPatterns()) {
-//                System.out.println(
-//                        method.getBeanType().getName() + "#" + method.getMethod().getName() +
-//                                " <-- " + urlPattern);
-//
-//                /*if (urlPattern.equals("some specific url")) {
-//                    //add to list of matching METHODS
-//                }*/
-//            }
-//        }
-//    }
+    private String getMethodRequestMapping(Method method) {
+        Assert.notNull(method, "'method' must not be null");
+        RequestMapping requestMapping = AnnotatedElementUtils.findMergedAnnotation(method, RequestMapping.class);
+        if (requestMapping == null) {
+            throw new IllegalArgumentException("No @RequestMapping on: " + method.toGenericString());
+        }
+        String[] paths = requestMapping.path();
+        if (ObjectUtils.isEmpty(paths) || StringUtils.isEmpty(paths[0])) {
+            return "/";
+        }
+        /*if (paths.length > 1 && logger.isWarnEnabled()) {
+            logger.warn("Multiple paths on method " + method.toGenericString() + ", using first one");
+        }*/
+        return paths[0];
+    }
+
+    private HandlerMethod getRequestHandlerDetails(String uri){
+
+        //WebApplicationContext context = new GenericWebApplicationContext();
+        RequestMappingHandlerMapping requestMappingHandlerMapping = appContext.getBean(RequestMappingHandlerMapping.class);
+        Map<RequestMappingInfo, HandlerMethod> handlerMethods =
+                requestMappingHandlerMapping.getHandlerMethods();
+
+        for(Map.Entry<RequestMappingInfo, HandlerMethod> item : handlerMethods.entrySet()) {
+            RequestMappingInfo mapping = item.getKey();
+            HandlerMethod method = item.getValue();
+
+            for (String urlPattern : mapping.getPatternsCondition().getPatterns()) {
+                System.out.println(
+                        method.getBeanType().getName() + "#" + method.getMethod().getName() +
+                                " <-- " + urlPattern);
+                if(uri.trim().endsWith(urlPattern))
+                    return method;
+
+                /*if (urlPattern.equals("some specific url")) {
+                    //add to list of matching METHODS
+                }*/
+            }
+        }
+
+        return null;
+    }
 
     private void setupResponseForHack(HttpServletResponse response, int code) throws Exception{
 
@@ -168,8 +182,7 @@ public class GenericInterceptor extends HandlerInterceptorAdapter {
 
         //logic
         String uri = request.getRequestURI();
-
-//        printRequestHandlerDetails();
+        System.out.println("URI requested -- "+uri);
 
         String apiCollaboratorKey = request.getHeader(Constants.HEADER_API_KEY);
         if(apiCollaboratorKey!= null){
@@ -238,6 +251,56 @@ public class GenericInterceptor extends HandlerInterceptorAdapter {
                     //return true;
                 }
             } else {
+                //find out the AppUser from sessionID
+                AppUser user = appUserService.getUserFromSession(sessionId);
+                request.setAttribute(Constants.APP_USER_ID, user.getId());
+                //get the permission from user
+                if(!user.issuperuser()){
+                    Set<AppPermission> permisns =  user.getUserPermissions();
+                    Set<String> pmsStrng = new HashSet<String>();
+                    movePermissionToSet(pmsStrng,permisns);
+
+                    HandlerMethod uriMethod = getRequestHandlerDetails(uri);
+                    if(uriMethod!= null){
+                        Method meth = uriMethod.getMethod();
+
+                        Annotation ann = meth.getAnnotation(MealOKPermission.class);
+                        if(ann != null && ann instanceof MealOKPermission){
+                            String[] permissions = ((MealOKPermission) ann).permissionCodes();
+                            String operator = ((MealOKPermission) ann).operator();
+
+                            System.out.println("Operation Inherited -- "+operator);
+                            System.out.println("Permission associated with URI --- "+uri);
+
+                            for(String str : permissions){
+                                System.out.println(str);
+                            }
+
+                            boolean flag2 = checkPermissionForAPI(operator,permissions,pmsStrng);
+                            if(!flag2){
+                                HackResponse res = new HackResponse();
+                                res.setCode(15);
+                                res.setMessage("You dont have permission for the above functionality.");
+                                //res.setRedirectURL(INDEX_URL);
+
+                                String json = Util.convertToJSON(res);
+                                response.setContentType("text/x-json;charset=UTF-8");
+                                response.setHeader("Cache-Control", "no-cache");
+                                response.getWriter().write(json);
+
+                                return false;
+
+                            }
+                        }
+                    }else{
+                        throw new Exception();
+                        //return false;
+                    }
+                }
+
+
+
+
                 if (uri.equals(INDEX_URL)) {
                     //redirect to dashboard
                     response.sendRedirect(DASHBOARD_URL);
@@ -260,6 +323,39 @@ public class GenericInterceptor extends HandlerInterceptorAdapter {
         //request.setAttribute("startTime", startTime);
         //if returned false, we need to make sure 'response' is sent
         return false;
+    }
+
+    private void movePermissionToSet(Set<String> perms , Set<AppPermission> objSet){
+
+        for(AppPermission aOBj : objSet){
+            perms.add(aOBj.getCodename());
+        }
+
+    }
+
+    private boolean checkPermissionForAPI(String operator,String[] permisns,Set<String> pmsStrng){
+        System.out.println("Operator ---- > "+operator);
+        for(String aOb : pmsStrng){
+            System.out.println("Set containing permissions -- "+aOb);
+        }
+        if(operator.equals("OR")){
+            for(String pms : permisns){
+                System.out.println("Permissions -- "+ pms);
+                if(pmsStrng.contains(pms))
+                    return true;
+            }
+        }else if(operator.equals("AND")){
+            for(String pms : permisns){
+                if(!pmsStrng.contains(pms))
+                    return false;
+            }
+
+            return true;
+
+        }
+
+        return false;
+
     }
 
 

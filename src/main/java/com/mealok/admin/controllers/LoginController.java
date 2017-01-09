@@ -37,6 +37,7 @@ public class LoginController {
     private static final String REQUEST_DATA_ABSENT = "All fields in request not present";
     private static final String CREDENTIALS_INCORRECT = "The credentials are incorrect";
     private static final String ACCOUNT_DEACTIVATED = "The account has been deactivated. Contact your administrator";
+    private static final String EMAIL_NOT_VERIFIED = "You have not verified the email id , please click on the link send to your mail.";
     private static final String INTERNAL_SERVER_ERROR = "Internal Server Error. Contact your administrator";
     private static final String PWD_NOT_MATCHING_SECURITY = "Enter your password: Please enter a password which is atleast 8 characters long, a digit must occur at least once," +
             "a lower case letter must occur at least once ,an upper case letter must occur at least once, " +
@@ -77,6 +78,10 @@ public class LoginController {
                 if(!aUser.isactive()){
                     response.setCode(2);
                     response.setMessage(ACCOUNT_DEACTIVATED);
+                }else if(!aUser.is_email_verified()){
+                    response.setCode(6);
+                    response.setMessage(EMAIL_NOT_VERIFIED);
+
                 }else{
                     if(aUser.isotp()){
                         //generate the token
@@ -116,6 +121,7 @@ public class LoginController {
                         sess.setIs_enabled(true);
                         sess.setLogged_in(new Date());
                         sess.setLogged_out(new Date(0));
+                        sess.setExpire_date(Util.getExpirationDateOfSession());
 
                         loginService.saveSession(aUser,sess);
 

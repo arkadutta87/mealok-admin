@@ -6,6 +6,7 @@ package com.mealok.admin.utils;
 public class Constants {
 
     public static final String SESSION_ID = "sessionID";
+    public static final String APP_USER_ID = "app_user_id";
     public static final String USER_NAME = "user_name";
 
     public static final String HEADER_API_KEY = "HEADER_API_KEY";

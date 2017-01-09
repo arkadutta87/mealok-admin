@@ -70,6 +70,9 @@ public class CreateSuperUser {
         user.setIsactive(true);
         user.setIsotp(true);
         user.setIssuperuser(true);
+
+        //setting email validated
+        user.setIs_email_verified(true);
         user.setIsstaff(true);
 
 

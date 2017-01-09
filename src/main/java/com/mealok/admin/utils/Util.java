@@ -2,6 +2,7 @@ package com.mealok.admin.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mealok.admin.common.InputEnum;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.BufferedReader;
@@ -166,6 +167,68 @@ public class Util {
 
         return (int)TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS);
 
+    }
+
+    public static boolean verifyIfFieldQualifies(String value, InputEnum fieldName) {
+
+        if (fieldName == null)
+            return false;
+        else {
+            switch (fieldName) {
+                case USERNAME:
+                    String EMAIL_PATTERN =
+                            "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
+                                    + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
+                    Pattern pattern = Pattern.compile(EMAIL_PATTERN);
+                    Matcher matcher = pattern.matcher(value);
+                    return matcher.matches();
+
+                case EMAIL:
+                    if (value.trim().isEmpty())
+                        return true;
+                    else {
+                        EMAIL_PATTERN =
+                                "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
+                                        + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
+                        pattern = Pattern.compile(EMAIL_PATTERN);
+                        matcher = pattern.matcher(value);
+                        return matcher.matches();
+                    }
+
+                case FIRST_NAME:
+                    return value.matches("[a-zA-Z]+");
+
+                case LAST_NAME:
+                    return value.matches("[a-zA-Z]+");
+
+                case MOBILE:
+                    if (value.trim().isEmpty())
+                        return true;
+                    else
+                        return value.trim().matches("[0-9]+");
+
+                case PASSWORD:
+                    //^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\S+$).{8,}$
+                    EMAIL_PATTERN =
+                            "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,}$";
+                    pattern = Pattern.compile(EMAIL_PATTERN);
+                    matcher = pattern.matcher(value);
+                    return matcher.matches();
+
+                default:
+                    return false;
+
+            }
+        }
+    }
+
+    public static Date getExpirationDateOfSession(){
+        Date dt = new Date();
+        Calendar c = Calendar.getInstance();
+        c.setTime(dt); // Now use today date.
+        c.add(Calendar.YEAR, 2);//Add 100 year
+
+        return c.getTime();
     }
 
 }

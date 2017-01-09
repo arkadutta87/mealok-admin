@@ -1,5 +1,6 @@
 package com.mealok.admin.controllers;
 
+import com.mealok.admin.common.MealOKPermission;
 import com.mealok.admin.payload.LogoutRequest;
 import com.mealok.admin.payload.LogoutResponse;
 import com.mealok.admin.payload.TestRequest;
@@ -17,8 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class TestController {
 
+    @MealOKPermission(operator = "AND" , permissionCodes = {"AppUser:add"})
     @RequestMapping(value = "/index/test/", method = RequestMethod.POST)
-    public ResponseEntity<TestResponse> loginAppUser(@RequestBody TestRequest request) {
+    public ResponseEntity<TestResponse> testMethod(@RequestBody TestRequest request) {
         TestResponse response = new TestResponse();
 
         response.setCode(0);
